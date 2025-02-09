@@ -115,6 +115,7 @@ player.CharacterAdded:Connect(function()
 		local number = tonumber(textbox.Text)
 		if not number then textbox.Text = "No number" return end
 		
+		textbox.Text = "Radius is now "..number
 		trackdistance = number
 		
 	end)
@@ -156,6 +157,14 @@ player.CharacterAdded:Connect(function()
 			local d2 = (lat.Position - primarypt.Position).Magnitude
 		
 			if d > d2 then
+				--local ray = workspace:Raycast(char.PrimaryPart.Position, (lat.Position - char.PrimaryPart.Position).Unit*trackdistance, params)
+				--if not ray then continue end
+				
+				--local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
+				--if not fchar then return end
+				
+				--if fchar ~= v then continue end
+				
 				closest = lat
 			
 			end
@@ -178,9 +187,11 @@ player.CharacterAdded:Connect(function()
 		if not ray then return end
 		
 		local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
-		if not fchar then return end
+		if not fchar then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
 		local hum = fchar:FindFirstChildOfClass("Humanoid")
 		if not hum then return end
+		
+		if fchar ~= closest.Parent then return end
 		
 		local c = fchar:FindFirstChildOfClass("Highlight")
 		if c then c.FillColor = Color3.new(0,0,1) end
