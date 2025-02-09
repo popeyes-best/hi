@@ -1,0 +1,160 @@
+local cam = workspace.CurrentCamera
+local players = workspace:WaitForChild("PLAYERS") or workspace
+
+local playerservice = game:GetService("Players")
+local player = playerservice.LocalPlayer
+local rs = game:GetService("RunService")
+
+local checkf = player:FindFirstChild("IsFound")
+if checkf then return end
+if not checkf then checkf = Instance.new("BoolValue", player) end
+checkf.Name = "IsFound"
+checkf.Value = true
+
+local espenabled = true
+local aimbotenabled = true
+
+local connection
+
+function UICORNER(obj)
+	Instance.new("UICorner", obj)
+
+end
+
+local sc
+
+function ESPMAKE(Char)
+	local c = Char:FindFirstChildOfClass("Highlight")
+
+	if c then if not espenabled then c:Destroy() end return end
+	if not espenabled then return end
+
+	local esp = Instance.new("Highlight")
+	esp.Parent = Char
+	esp.Adornee = Char
+
+	esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+end
+
+local trackdistance = 100
+
+player.CharacterAdded:Connect(function()
+	if connection then connection:Disconnect() end
+	
+	local screenui = Instance.new("ScreenGui", player.PlayerGui)
+
+	local frame = Instance.new("Frame", screenui)
+	frame.Size = UDim2.new(0.089, 0,0.13, 0)
+	frame.Position = UDim2.new(0, 0,0.095, 0)
+	UICORNER(frame)
+
+	local tip = Instance.new("TextLabel", frame)
+	tip.Size = UDim2.new(1, 0,0.366, 0)
+	tip.Position = UDim2.new(0, 0,0, 0)
+	tip.BackgroundTransparency = 1
+	tip.Text = "any game esp/aimbot"
+	tip.TextScaled = true
+
+	local espui = Instance.new("TextButton", frame)
+	espui.Size = UDim2.new(1, 0,0.286, 0)
+	espui.Position = UDim2.new(0, 0,0.421, 0)
+	espui.Text = "ESP: "..tostring(espenabled)
+	espui.Name = "esp"
+	espui.TextScaled = true
+
+	UICORNER(espui)
+
+	local aimui = Instance.new("TextButton", frame)
+	aimui.Size = UDim2.new(1, 0,0.286, 0)
+	aimui.Position = UDim2.new(0, 0,0.712, 0)
+	aimui.Text = "AIMBOT: "..tostring(aimbotenabled)
+	aimui.Name = "aim"
+	aimui.TextScaled = true
+
+	UICORNER(aimui)
+
+	espui.Activated:Connect(function()
+		espenabled = not espenabled
+		espui.Text = "ESP: "..tostring(espenabled)
+	
+	end)
+
+	aimui.Activated:Connect(function()
+		aimbotenabled = not aimbotenabled
+		aimui.Text = "AIMBOT: "..tostring(aimbotenabled)
+		
+	end)
+
+	connection = rs.Heartbeat:Connect(function()
+		local char = player.Character
+		if not char then return end
+		
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		params.FilterDescendantsInstances = {char}
+	
+		local primarypt = char.PrimaryPart
+	
+		local closest
+	
+		for _, v in players:GetChildren() do
+			if v == char then continue end
+			
+			--local findplayer = playerservice:GetPlayerFromCharacter(v)
+			--if not findplayer then continue end
+			
+			--if findplayer.Team == player.Team then continue end
+		
+			local hum = v:FindFirstChildOfClass("Humanoid")
+			if not hum then continue end
+			if hum.Health <= 0 then continue end
+		
+			ESPMAKE(v)
+		
+			if not aimbotenabled then continue end
+		
+			local lat = v:FindFirstChild("Head") or v.PrimaryPart
+			if not lat then continue end
+		
+			if not closest then closest = lat continue end
+		
+			local d = (closest.Position - primarypt.Position).Magnitude
+			local d2 = (lat.Position - primarypt.Position).Magnitude
+		
+			if d > d2 then
+				sc = v
+				closest = lat
+			
+			end
+		
+		end
+		
+		for _, v in players:GetChildren() do
+			if not closest then continue end
+			if v == closest.Parent then continue end
+			
+			local c = v:FindFirstChildOfClass("Highlight")
+			if not c then continue end
+			c.FillColor = Color3.new(1,0,0)
+			
+		end
+	
+		if not closest then return end
+		
+		local ray = workspace:Raycast(char.PrimaryPart.Position, (closest.Position - char.PrimaryPart.Position).Unit*trackdistance, params)
+		if not ray then return end
+		
+		local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
+		if not fchar then return end
+		local hum = fchar:FindFirstChildOfClass("Humanoid")
+		if not hum then return end
+		
+		local c = fchar:FindFirstChildOfClass("Highlight")
+		if c then c.FillColor = Color3.new(0,0,1) end
+		
+		cam.CFrame = CFrame.new(cam.CFrame.Position, closest.Position)
+	
+	end)
+	
+end)
