@@ -1,5 +1,5 @@
 local cam = workspace.CurrentCamera
-local players = workspace:WaitForChild("PLAYERS") or workspace
+local players = workspace
 
 local playerservice = game:GetService("Players")
 local player = playerservice.LocalPlayer
