@@ -35,10 +35,7 @@ function ESPMAKE(Char)
 
 end
 
---local textboxselection = false
-
 local trackdistance = 100
---local playerfind = 1
 
 player.CharacterAdded:Connect(function()
 	if connection then connection:Disconnect() end
@@ -73,15 +70,6 @@ player.CharacterAdded:Connect(function()
 	aimui.TextScaled = true
 	UICORNER(aimui)
 	
-	--local textboss = Instance.new("TextButton", frame)
-	--textboss.Size = UDim2.new(1, 0,0.138, 0)
-	--textboss.Position = UDim2.new(0, 0,0.704, 0)
-	--local textt = textboxselection and "Player Radius" or "Radius"
-	--textboss.Text = "TextBoxS: "..textt
-	--textboss.Name = "TextBoxS"
-	--textboss.TextScaled = true
-	--UICORNER(textboss)
-	
 	local textbox = Instance.new("TextBox", frame)
 	textbox.Size = UDim2.new(1, 0,0.153, 0)
 	textbox.Position = UDim2.new(0, 0,0.847, 0)
@@ -102,15 +90,6 @@ player.CharacterAdded:Connect(function()
 		
 	end)
 	
-	--textboss.Activated:Connect(function()
-	--	textboxselection = not textboxselection
-		
-	--	local text = "Radius"
-		
-	--	textboss.Text = "TextBox: "..text
-		
-	--end)
-	
 	textbox.FocusLost:Connect(function()
 		local number = tonumber(textbox.Text)
 		if not number then textbox.Text = "No number" return end
@@ -128,7 +107,8 @@ player.CharacterAdded:Connect(function()
 		params.FilterType = Enum.RaycastFilterType.Exclude
 		params.FilterDescendantsInstances = {char}
 	
-		local primarypt = char.PrimaryPart
+		local primarypt = char.PrimaryPart or char.Head
+		if not primarypt then return end
 		
 		local closest
 	
@@ -157,13 +137,6 @@ player.CharacterAdded:Connect(function()
 			local d2 = (lat.Position - primarypt.Position).Magnitude
 		
 			if d > d2 then
-				--local ray = workspace:Raycast(char.PrimaryPart.Position, (lat.Position - char.PrimaryPart.Position).Unit*trackdistance, params)
-				--if not ray then continue end
-				
-				--local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
-				--if not fchar then return end
-				
-				--if fchar ~= v then continue end
 				
 				closest = lat
 			
@@ -183,13 +156,13 @@ player.CharacterAdded:Connect(function()
 	
 		if not closest then return end
 		
-		local ray = workspace:Raycast(char.PrimaryPart.Position, (closest.Position - char.PrimaryPart.Position).Unit*trackdistance, params)
-		if not ray then return end
+		local ray = workspace:Raycast(primarypt.Position, (closest.Position - primarypt.Position).Unit*trackdistance, params)
+		if not ray then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
 		
 		local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
 		if not fchar then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
 		local hum = fchar:FindFirstChildOfClass("Humanoid")
-		if not hum then return end
+		if not hum then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
 		
 		if fchar ~= closest.Parent then return end
 		
