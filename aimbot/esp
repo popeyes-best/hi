@@ -1,3 +1,5 @@
+print("working")
+
 local cam = workspace.CurrentCamera
 local players = workspace
 
@@ -36,6 +38,143 @@ function ESPMAKE(Char)
 end
 
 local trackdistance = 100
+
+if player.Character then
+	if connection then connection:Disconnect() end
+	
+	local screenui = Instance.new("ScreenGui", player.PlayerGui)
+
+	local frame = Instance.new("Frame", screenui)
+	frame.Size = UDim2.new(0.089, 0,0.194, 0)
+	frame.Position = UDim2.new(0, 0,0.095, 0)
+	UICORNER(frame)
+
+	local tip = Instance.new("TextLabel", frame)
+	tip.Size = UDim2.new(1, 0,0.279, 0)
+	tip.Position = UDim2.new(0, 0,0, 0)
+	tip.BackgroundTransparency = 1
+	tip.Text = "any game esp/aimbot"
+	tip.TextScaled = true
+
+	local espui = Instance.new("TextButton", frame)
+	espui.Size = UDim2.new(1, 0,0.199, 0)
+	espui.Position = UDim2.new(0, 0,0.277, 0)
+	espui.Text = "ESP: "..tostring(espenabled)
+	espui.Name = "esp"
+	espui.TextScaled = true
+	UICORNER(espui)
+
+	local aimui = Instance.new("TextButton", frame)
+	aimui.Size = UDim2.new(1, 0,0.165, 0)
+	aimui.Position = UDim2.new(0, 0,0.475, 0)
+	aimui.Text = "AIMBOT: "..tostring(aimbotenabled)
+	aimui.Name = "aim"
+	aimui.TextScaled = true
+	UICORNER(aimui)
+	
+	local textbox = Instance.new("TextBox", frame)
+	textbox.Size = UDim2.new(1, 0,0.153, 0)
+	textbox.Position = UDim2.new(0, 0,0.847, 0)
+	textbox.Text = ""
+	textbox.PlaceholderText = "Detection Radius"
+	textbox.TextScaled = true
+	UICORNER(textbox)
+
+	espui.Activated:Connect(function()
+		espenabled = not espenabled
+		espui.Text = "ESP: "..tostring(espenabled)
+	
+	end)
+
+	aimui.Activated:Connect(function()
+		aimbotenabled = not aimbotenabled
+		aimui.Text = "AIMBOT: "..tostring(aimbotenabled)
+		
+	end)
+	
+	textbox.FocusLost:Connect(function()
+		local number = tonumber(textbox.Text)
+		if not number then textbox.Text = "No number" return end
+		
+		textbox.Text = "Radius is now "..number
+		trackdistance = number
+		
+	end)
+
+	connection = rs.Heartbeat:Connect(function()
+		local char = player.Character
+		if not char then return end
+		
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		params.FilterDescendantsInstances = {char}
+	
+		local primarypt = char.PrimaryPart or char.Head
+		if not primarypt then return end
+		
+		local closest
+	
+		for _, v in players:GetChildren() do
+			if v == char then continue end
+			
+			--local findplayer = playerservice:GetPlayerFromCharacter(v)
+			--if not findplayer then continue end
+			
+			--if findplayer.Team == player.Team then continue end
+		
+			local hum = v:FindFirstChildOfClass("Humanoid")
+			if not hum then continue end
+			if hum.Health <= 0 then continue end
+		
+			ESPMAKE(v)
+		
+			if not aimbotenabled then continue end
+		
+			local lat = v:FindFirstChild("Head") or v.PrimaryPart
+			if not lat then continue end
+		
+			if not closest then closest = lat continue end
+		
+			local d = (closest.Position - primarypt.Position).Magnitude
+			local d2 = (lat.Position - primarypt.Position).Magnitude
+		
+			if d > d2 then
+				
+				closest = lat
+			
+			end
+		
+		end
+		
+		for _, v in players:GetChildren() do
+			if not closest then continue end
+			if v == closest.Parent then continue end
+			
+			local c = v:FindFirstChildOfClass("Highlight")
+			if not c then continue end
+			c.FillColor = Color3.new(1,0,0)
+			
+		end
+	
+		if not closest then return end
+		
+		local ray = workspace:Raycast(primarypt.Position, (closest.Position - primarypt.Position).Unit*trackdistance, params)
+		if not ray then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
+		
+		local fchar = ray.Instance:FindFirstAncestorOfClass("Model")
+		if not fchar then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
+		local hum = fchar:FindFirstChildOfClass("Humanoid")
+		if not hum then if closest.Parent.Highlight then closest.Parent.Highlight.FillColor = Color3.new(0,1,0) end return end
+		
+		if fchar ~= closest.Parent then return end
+		
+		local c = fchar:FindFirstChildOfClass("Highlight")
+		if c then c.FillColor = Color3.new(0,0,1) end
+		
+		cam.CFrame = CFrame.new(cam.CFrame.Position, closest.Position)
+	
+	end)
+end
 
 player.CharacterAdded:Connect(function()
 	if connection then connection:Disconnect() end
